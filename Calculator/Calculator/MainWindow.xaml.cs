@@ -1,6 +1,9 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,11 +24,42 @@ namespace Calculator
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ObservableCollection<Button> Buttons = new ObservableCollection<Button>();
+        private Button AllClear;
         public MainWindow()
         {
             InitializeComponent();
+
             InitButtons();
+
+            foreach (var b in Buttons)
+                b.Click += new RoutedEventHandler(ButtonClick);
+            AllClear.Click += new RoutedEventHandler(ClearField);
         }
+
+        private void ClearField(object sender, RoutedEventArgs e)
+        {
+            CalcTBlock.Text = String.Empty; 
+        }
+
+        private void ButtonClick(object sender, RoutedEventArgs e)
+        {
+
+            if ((sender as Button).Content == "=")
+            {
+                try
+                {
+                    CalcTBlock.Text = new DataTable().Compute(CalcTBlock.Text, null).ToString();
+                    if (CalcTBlock.Text.Contains(','))
+                        CalcTBlock.Text = CalcTBlock.Text.Replace(',', '.');
+                }
+                catch (Exception) { }
+                return;
+            }
+            CalcTBlock.Text += (sender as Button).Content.ToString();
+
+        }
+
         void InitButtons()
         {
             // Number buttons
@@ -33,27 +67,30 @@ namespace Calculator
             {
                 for (int col = 0; col <= 2; col++)
                 {
-                    MainGrid.Children.Add(NewButton(value.ToString(), "NumberButton" + value.ToString(), row, col));
+                    Buttons.Add(NewButton(value.ToString(), "NumberButton" + value.ToString(), row, col));
                     value++;
                 }
             }
-            MainGrid.Children.Add(NewButton("0", "NumberButton0", 5, 1));
+            Buttons.Add(NewButton("0", "NumberButton0", 5, 1));
 
             // Calculation buttons
-            MainGrid.Children.Add(NewButton(".", "CalculationButtonDot", 5, 0));
-            MainGrid.Children.Add(NewButton("=", "CalculationButtonEquals", 5, 2));
-            MainGrid.Children.Add(NewButton("/", "CalculationButtonDivide", 2, 3));
-            MainGrid.Children.Add(NewButton("*", "CalculationButtonMultiply", 3, 3));
-            MainGrid.Children.Add(NewButton("-", "CalculationButtonMinus", 4, 3));
-            MainGrid.Children.Add(NewButton("+", "CalculationButtonPlus", 5, 3));
+            Buttons.Add(NewButton(".", "CalculationButtonDot", 5, 0));
+            Buttons.Add(NewButton("=", "CalculationButtonEquals", 5, 2));
+            Buttons.Add(NewButton("/", "CalculationButtonDivide", 2, 3));
+            Buttons.Add(NewButton("*", "CalculationButtonMultiply", 3, 3));
+            Buttons.Add(NewButton("-", "CalculationButtonMinus", 4, 3));
+            Buttons.Add(NewButton("+", "CalculationButtonPlus", 5, 3));
+            Buttons.Add(NewButton("(", "CalculationButtonOpenBracket", 1, 0));
+            Buttons.Add(NewButton(")", "CalculationButtonCloseBracket", 1, 1));
+            Buttons.Add(NewButton("%", "CalculationButtonPercent", 1, 2));
 
             // Other buttons
-            MainGrid.Children.Add(NewButton("(", "CalculationButtonOpenBracket", 1, 0));
-            MainGrid.Children.Add(NewButton(")", "CalculationButtonCloseBracket", 1, 1));
-            MainGrid.Children.Add(NewButton("%", "CalculationButtonPercent", 1, 2));
-            MainGrid.Children.Add(NewButton("AC", "CalculationButtonAC", 1, 3));
+            AllClear = NewButton("AC", "OtherButtonAC", 1, 3);
 
-
+            // Init
+            foreach (var btn in Buttons)
+                MainGrid.Children.Add(btn);
+            MainGrid.Children.Add(AllClear);
         }
         Button NewButton(string content, string name, int row, int col)
         {
@@ -61,6 +98,17 @@ namespace Calculator
             button.SetValue(Grid.RowProperty, row);
             button.SetValue(Grid.ColumnProperty, col);
             return button;
+        }
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Window window = (Window)sender;
+            for (
+                int fontSize = 95, windowHeight = 1000;
+                windowHeight > 50;
+                fontSize -= 3, windowHeight -= 25
+                )
+                if (fontSize > 5 && window.Height < windowHeight)
+                    window.FontSize = fontSize;
         }
     }
 }

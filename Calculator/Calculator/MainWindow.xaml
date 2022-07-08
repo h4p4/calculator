@@ -6,9 +6,10 @@
         xmlns:local="clr-namespace:Calculator"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="500"
-        FontSize="45"
+        MinWidth="300"
         Foreground="White"
-        Background="#1f1f1f">
+        Background="#1f1f1f"
+        SizeChanged="Window_SizeChanged">
     <Window.Resources>
         <Style TargetType="Button">
             <Style.Triggers>
@@ -52,6 +53,6 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock Text="0" Grid.ColumnSpan="4" HorizontalAlignment="Right"/>
+        <TextBlock Name="CalcTBlock" Grid.ColumnSpan="4" HorizontalAlignment="Right"/>
     </Grid>
 </Window>
